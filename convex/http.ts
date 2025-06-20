@@ -5,6 +5,10 @@ import { httpAction } from "./_generated/server";
 
 const http = httpRouter();
 
+// 1- we need to make sure that the webhook even is coming from Clerk
+// 2- if so, we will listen to the user.created event
+// 3- we will create a user in our database using the data from the event
+
 http.route({
   path: "/clerk-webhook",
   method: "POST",
@@ -48,9 +52,9 @@ http.route({
     const eventType = evt.type;
 
     if (eventType === "user.created") {
-      const { id, email_addressess, first_name, last_name, image_url } =
+      const { id, email_addresses, first_name, last_name, image_url } =
         evt.data;
-      const email = email_addressess[0]?.email_address || "";
+      const email = email_addresses[0]?.email_address || "";
       const name = `${first_name || ""} ${last_name || ""}`.trim();
 
       try {
