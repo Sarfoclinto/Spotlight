@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 
 export const createUser = mutation({
   args: {
@@ -31,5 +31,38 @@ export const createUser = mutation({
       following: 0,
       posts: 0,
     });
+  },
+});
+
+export const getAuthUser = async (ctx: QueryCtx | MutationCtx) => {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error(
+      "Unauthorized: User identity is required to get auth user."
+    );
+  }
+
+  // Fetch the current user
+  const currentUser = await ctx.db
+    .query("users")
+    .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+    .first();
+
+  if (!currentUser) {
+    throw new Error("User not found: Unable to fetch auth user.");
+  }
+
+  return currentUser;
+};
+
+export const getUserByClerkId = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, { clerkId }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", clerkId))
+      .unique();
+
+    return user;
   },
 });
