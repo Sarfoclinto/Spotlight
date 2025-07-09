@@ -36,7 +36,13 @@ const NotificationItem = ({ notification }: any) => {
   return (
     <View style={styles.notificationItem}>
       <View style={styles.notificationContent}>
-        <Link href={`/notification`} asChild>
+        <Link
+          href={{
+            pathname: "/user/[userId]",
+            params: { userId: notification.sender._id },
+          }}
+          asChild
+        >
           <TouchableOpacity style={styles.avatarContainer}>
             <Image
               source={notification.sender.image}

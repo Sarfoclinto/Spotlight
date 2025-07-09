@@ -22,15 +22,9 @@ type CommentsModalProps = {
   postId: Id<"posts">;
   visible: boolean;
   onClose: () => void;
-  onCommentAdded: () => void;
 };
 
-const CommentsModal = ({
-  onClose,
-  onCommentAdded,
-  postId,
-  visible,
-}: CommentsModalProps) => {
+const CommentsModal = ({ onClose, postId, visible }: CommentsModalProps) => {
   const [comment, setComment] = useState("");
 
   const comments = useQuery(api.comments.getComments, { postId });
@@ -42,7 +36,6 @@ const CommentsModal = ({
     try {
       await addComment({ postId, content: comment });
       setComment("");
-      onCommentAdded();
     } catch (error) {
       console.error("Error adding comment:", error);
       // Optionally, you can show an error message to the user

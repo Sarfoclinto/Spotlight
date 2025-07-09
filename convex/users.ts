@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 
 export const createUser = mutation({
@@ -81,3 +82,82 @@ export const getUserByClerkId = query({
     return user;
   },
 });
+
+export const getUserProfile = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
+    return user;
+  },
+});
+
+export const isFollowing = query({
+  args: { followingId: v.id("users") },
+  handler: async (ctx, { followingId }) => {
+    const currentUser = await getAuthUser(ctx);
+
+    const follow = await ctx.db
+      .query("follows")
+      .withIndex("by_both", (q) =>
+        q.eq("followerId", currentUser._id).eq("followingId", followingId)
+      )
+      .first();
+
+    return !!follow;
+  },
+});
+
+export const toggleFollow = mutation({
+  args: { followingId: v.id("users") },
+  handler: async (ctx, { followingId }) => {
+    const currentUser = await getAuthUser(ctx);
+
+    const existing = await ctx.db
+      .query("follows")
+      .withIndex("by_both", (q) =>
+        q.eq("followerId", currentUser._id).eq("followingId", followingId)
+      )
+      .first();
+
+    if (existing) {
+      //unfollow
+      await ctx.db.delete(existing._id);
+      await updateFollowingCount(ctx, currentUser._id, followingId, false);
+    } else {
+      //follow\
+      await ctx.db.insert("follows", {
+        followerId: currentUser._id,
+        followingId,
+      });
+      await updateFollowingCount(ctx, currentUser._id, followingId, true);
+
+      // create notification
+      await ctx.db.insert("notifications", {
+        senderId: currentUser._id,
+        type: "follow",
+        recieverId: followingId,
+      });
+    }
+  },
+});
+
+const updateFollowingCount = async (
+  ctx: MutationCtx,
+  followerId: Id<"users">,
+  followingId: Id<"users">,
+  isFollow: boolean
+) => {
+  const follower = await ctx.db.get(followerId);
+  const following = await ctx.db.get(followingId);
+
+  if (follower && following) {
+    await ctx.db.patch(followerId, {
+      following: follower.following + (isFollow ? 1 : -1),
+    });
+    await ctx.db.patch(followingId, {
+      followers: following?.followers + (isFollow ? 1 : -1),
+    });
+  }
+};

@@ -50,16 +50,39 @@
 - Legacy support: When maintaining compatibility with existing code that uses React Native Image.
 - Basic requirement: When advanced image features aren't needed for your use case.
 
-
 ## For other PKGs (check out from ReactNative Directory)
+
 - For other third-party libraries: https://reactnative.directory
 
 ## React Native Gestures
+
 -Gestures are a great way to provide an intuitive user experience in an app.
+
 - The **React Native Gesture Handler** library provides built-in native components that can handle gestures
 - It recognizes pan, tap, rotation, and other gestures using the platform's native touch handling system
 - Learn more: https://docs.swmansion.com/react-native-gesture-handler/docs/
 
 ## React Native Reanimated
+
 - Create smooth animations with an excellent developer experience.
 - Learn more: https://docs.swmansion.com/react-native-reanimated/
+
+## Building and Publishing
+
+- You can build your app for production with Expo Application Services (EAS)
+- If you want to submit it to Google Play Store / App Store you'll need a developer account
+- It would take couple for days/weeks till your app gets accepted and go live
+- https://docs.expo.dev/deploy/build-project
+- https://docs.expo.dev/deploy/submit-to-app-store
+
+## Steps
+
+- visit expo.dev and signup
+- npm i -g eas-cli
+- eas login
+- eas init & it'll ask you to create a project, just say yes
+- eas build --platform android => build for android => will give you APK file
+- eas build --platform android => build for ios => will give you IPA file
+- Then you'd take those files and submit to play store or appstore
+
+## Your challenge to publish this app and let us know!

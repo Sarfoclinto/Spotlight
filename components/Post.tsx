@@ -33,8 +33,6 @@ type PostProps = {
 };
 const Post = ({ post }: PostProps) => {
   const [isLiked, setIsLiked] = useState(post.isLiked);
-  const [likeCount, setLikeCount] = useState(post.likes);
-  const [commentsCount, setCommentsCount] = useState(post.comments);
   const [showComments, setShowComments] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
   const { user } = useUser();
@@ -47,7 +45,6 @@ const Post = ({ post }: PostProps) => {
     try {
       const newIsLiked = await toggleLike({ postId: post._id });
       setIsLiked(newIsLiked);
-      setLikeCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
     } catch (error) {
       console.error("Error toggling like:", error);
       // Optionally, you can show an error message to the user
@@ -77,7 +74,17 @@ const Post = ({ post }: PostProps) => {
     <View style={styles.post}>
       {/* Post header */}
       <View style={styles.postHeader}>
-        <Link href={"/(tabs)/notification"}>
+        <Link
+          href={
+            currentUser?._id === post.author._id
+              ? "/(tabs)/profile"
+              : {
+                  pathname: "/user/[userId]",
+                  params: { userId: post.author._id },
+                }
+          }
+          asChild
+        >
           <TouchableOpacity style={styles.postHeaderLeft}>
             <Image
               source={post.author.image}
@@ -146,8 +153,8 @@ const Post = ({ post }: PostProps) => {
       {/* post info */}
       <View style={styles.postInfo}>
         <Text style={styles.likesText}>
-          {likeCount > 0
-            ? `${likeCount.toLocaleString()} likes`
+          {post.likes > 0
+            ? `${post.likes.toLocaleString()} likes`
             : "Be the first to like"}
         </Text>
         {post.caption && (
@@ -157,10 +164,10 @@ const Post = ({ post }: PostProps) => {
           </View>
         )}
 
-        {commentsCount > 0 && (
+        {post.comments > 0 && (
           <TouchableOpacity onPress={() => setShowComments(true)}>
             <Text style={styles.commentText}>
-              View all {commentsCount} comments
+              View all {post.comments} comments
             </Text>
           </TouchableOpacity>
         )}
@@ -174,7 +181,6 @@ const Post = ({ post }: PostProps) => {
         postId={post._id}
         visible={showComments}
         onClose={() => setShowComments(false)}
-        onCommentAdded={() => setCommentsCount((prev) => prev + 1)}
       />
     </View>
   );

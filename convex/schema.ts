@@ -37,7 +37,7 @@ export default defineSchema({
   }).index("by_post", ["postId"]),
 
   follows: defineTable({
-    followerId: v.id("user"),
+    followerId: v.id("users"),
     followingId: v.id("users"),
   })
     .index("by_follower", ["followingId"])
